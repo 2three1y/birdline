@@ -64,6 +64,10 @@ Plain HTML, CSS and JavaScript modules. No build step, no framework, no CDNs, no
 
 Nostr events used: kind 0 (profile), 1 (posts), 3 (follows), 10002 (relay list), 30078 (username claim and synced sign-in).
 
+## Releasing
+
+GitHub Pages caches files for 10 minutes, so every app file is loaded with a version stamp. After changing code, run `node tools/bump-version.mjs 0.1.2` (next number) so phones get the new files right away.
+
 ## Tests
 
 ```bash

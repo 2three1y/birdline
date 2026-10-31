@@ -1,9 +1,9 @@
 // Birdline app: router and views. All text goes in with textContent, never as markup, because a script injection here could steal a key.
-import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js';
-import * as U from './util.js';
-import * as S from './store.js';
-import * as N from './nostr.js';
-import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js';
+import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.1';
+import * as U from './util.js?v=0.1.1';
+import * as S from './store.js?v=0.1.1';
+import * as N from './nostr.js?v=0.1.1';
+import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.1.1';
 
 // ---------- tiny DOM helpers ----------
 function el(tag, attrs = {}, ...kids) {
@@ -298,7 +298,7 @@ function viewKey(box) {
     try {
       if (s.startsWith('nsec1')) {
         const d = nip19.decode(s); const skHex = U.bytesToHexSafe(d.data);
-        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js');
+        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.1');
         await finishSignIn({ pubkey: getPublicKey(d.data), skHex, method: 'local', remember: remember.input.checked });
         location.hash = '#/home'; return;
       }
@@ -437,7 +437,7 @@ async function viewHome(box) {
     newBtn.hidden = !pending.length;
     newBtn.textContent = `${pending.length} new post${pending.length === 1 ? '' : 's'}`;
     if (!pending.length) return;
-    const say = () => { lastAnnounce = Date.now(); announce(`${pending.length} new post${pending.length === 1 ? '' : 's'}. The button to show them is above your timeline.`); };
+    const say = () => { lastAnnounce = Date.now(); announce(pending.length === 1 ? '1 new post. Show it with the button above your timeline.' : `${pending.length} new posts. Show them with the button above your timeline.`); };
     const wait = 30000 - (Date.now() - lastAnnounce);
     if (wait <= 0) say(); else if (!announceLater) announceLater = setTimeout(() => { announceLater = null; if (pending.length) say(); }, wait);
   }
@@ -514,7 +514,7 @@ async function viewProfile(box, r) {
     const banner = U.safeUrl(prof.banner);
     const pic = U.safeUrl(prof.picture);
     const site = U.safeUrl(prof.website);
-    header.replaceChildren(
+    header.replaceChildren(...[
       el('div', { class: 'banner' }, banner ? el('img', { src: banner, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : null),
       el('div', { class: 'avatar-row' },
         pic ? el('img', { class: 'avatar', src: pic, alt: '', width: '72', height: '72', referrerpolicy: 'no-referrer' }) : el('span', { class: 'avatar initial', 'aria-hidden': 'true', text: (d.name[0] || '?').toUpperCase() }),
@@ -522,10 +522,10 @@ async function viewProfile(box, r) {
       prof.about ? el('p', { class: 'bio', id: 'profile-bio' }, textNodes(String(prof.about).slice(0, 500))) : el('p', { class: 'bio muted', id: 'profile-bio', text: mine ? 'No bio yet. Add one in Settings.' : 'No bio yet.' }),
       site ? el('p', { class: 'website' }, el('a', { href: site, target: '_blank', rel: 'noopener noreferrer me', id: 'profile-website' }, site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))) : null,
       el('ul', { class: 'counts', id: 'profile-counts' },
-        el('li', { id: 'count-posts' }, el('strong', { text: '…' }), ' posts'),
+        el('li', { id: 'count-posts' }, el('strong', { text: '…' }), el('span', { class: 'count-word', text: ' posts' })),
         el('li', { id: 'count-following' }, el('strong', { text: '…' }), ' following'),
-        el('li', { id: 'count-followers' }, el('strong', { text: '…' }), ' followers seen')),
-      el('div', { class: 'profile-actions' }, ...actions()));
+        el('li', { id: 'count-followers' }, el('strong', { text: '…' }), el('span', { class: 'count-word', text: ' followers seen' }))),
+      el('div', { class: 'profile-actions' }, ...actions())].filter(Boolean));
   }
   function actions() {
     const copy = el('button', { type: 'button', class: 'btn quiet small', id: 'profile-copy-npub' }, 'Copy account key (npub)');
@@ -562,7 +562,10 @@ async function viewProfile(box, r) {
   if (!prof || !prof.fetched) N.fetchProfile(pk).then(() => { if (document.body.contains(header)) drawHeader(); setCounts(); });
   let nPosts = null, nFollowing = null, nFollowers = null;
   function setCounts() {
-    const s = (id, v) => { const e = document.querySelector(`#${id} strong`); if (e && v != null) e.textContent = String(v); };
+    const s = (id, v) => {
+      const e = document.querySelector(`#${id} strong`); if (!e || v == null) return; e.textContent = String(v);
+      const w = document.querySelector(`#${id} .count-word`); if (w) w.textContent = id === 'count-posts' ? (v === 1 ? ' post' : ' posts') : (v === 1 ? ' follower seen' : ' followers seen');
+    };
     s('count-posts', nPosts); s('count-following', nFollowing); s('count-followers', nFollowers);
   }
   N.fetchNewestFollowList(pk).then(f => { nFollowing = U.followsOf(f).length; setCounts(); });
@@ -704,4 +707,4 @@ async function start() {
   await route();
 }
 start();
-window.birdline = { version: '0.1.0', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
+window.birdline = { version: '0.1.1', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };

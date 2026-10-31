@@ -48,3 +48,14 @@ test('word rules', () => {
     if (!f.includes('vendor') && !f.endsWith('README.md') && !f.includes('docs')) assert.doesNotMatch(s, /twitter|tweet/, `${f} uses the original's name`);
   }
 });
+
+test('every app import carries the same cache version', () => {
+  const versions = new Set();
+  for (const f of ['index.html', ...readdirSync(join(root, 'js')).map(x => 'js/' + x)]) {
+    const s = readFileSync(join(root, f), 'utf8');
+    for (const m of s.matchAll(/(?:from |import\(|src="|href="|URL\()['"]?((?:\.\.?\/|js\/|css\/)[\w./-]+\.(?:js|css))(\?v=[\w.]+)?/g)) {
+      assert.ok(m[2], `${f}: ${m[1]} has no ?v=`); versions.add(m[2]);
+    }
+  }
+  assert.equal(versions.size, 1, [...versions].join(' '));
+});
