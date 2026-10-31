@@ -19,10 +19,12 @@ export async function publish(template, targetRelays = relays) {
   const t = { created_at: Math.floor(Date.now() / 1000), content: '', tags: [], ...template };
   if (!t.tags.some(x => x[0] === 'client')) t.tags = [...t.tags, ['client', APP_TAG]];
   const event = await signer.sign(t);
-  const results = await Promise.allSettled(pool.publish(targetRelays, event, { maxWait: 8000 }));
+  const results = await Promise.allSettled(pool.publish(targetRelays, event, { maxWait: 6000 }));
   const errors = results.map((r, i) => r.status === 'rejected' ? `${targetRelays[i]}: ${String(r.reason && r.reason.message || r.reason)}` : null).filter(Boolean);
   const ok = results.filter(r => r.status === 'fulfilled').length;
-  return { event, ok, total: targetRelays.length, errors };
+  const slow = errors.filter(e => /timed out/.test(e)).length;
+  if (errors.length) console.info('[birdline] publish kind', event.kind, 'errors:', errors);
+  return { event, ok, total: targetRelays.length, errors, slow };
 }
 
 export function query(filter, maxWait = 4000) { return pool.querySync(relays, filter, { maxWait }); }
@@ -73,7 +75,7 @@ export function rememberFollowList(ev) { cachePut('f:' + ev.pubkey, ev); }
 
 // ---- usernames: claims and synced logins are kind 30078 events labeled with the username (NIP-32 "l" tag) ----
 export async function findUsername(username) {
-  const evs = await query({ kinds: [30078], '#l': [username], '#d': ['birdline/handle', 'birdline/login'] }, 4500).catch(() => []);
+  const evs = await query({ kinds: [30078], '#l': [username], '#d': ['birdline/handle', 'birdline/login'] }, 3500).catch(() => []);
   return evs.filter(e => e.tags.some(t => t[0] === 'l' && t[1] === username && t[2] === LABEL_NS));
 }
 /** Who claimed the name first (earliest claim per pubkey wins), or null. */

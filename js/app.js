@@ -240,18 +240,21 @@ function viewJoin(box) {
       N.setLocalSigner(k.skHex);
       const profile = { name: u, display_name: nm, about: '' };
       const now = Math.floor(Date.now() / 1000);
-      const r0 = await N.publish({ kind: 0, content: JSON.stringify(profile) });
-      N.rememberProfileEvent(r0.event);
       const label = [['L', U.LABEL_NS], ['l', u, U.LABEL_NS]];
-      const extras = [
+      // everything goes out at once, so the wait is one relay round, not four
+      const jobs = [
+        N.publish({ kind: 0, content: JSON.stringify(profile) }),
         N.publish({ kind: 10002, tags: N.relays.map(x => ['r', x]) }),
         N.publish({ kind: 30078, tags: [['d', 'birdline/handle'], ...label, ['claimed_at', String(now)]], content: '' }),
       ];
-      if (synced.input.checked) extras.push(N.publish({ kind: 30078, tags: [['d', 'birdline/login'], ...label, ['alt', 'Birdline sign-in: account key locked with the owner’s password (NIP-49)']], content: k.ncryptsec }));
-      const rs = await Promise.allSettled(extras);
+      if (synced.input.checked) jobs.push(N.publish({ kind: 30078, tags: [['d', 'birdline/login'], ...label, ['alt', 'Birdline sign-in: account key locked with the owner’s password (NIP-49)']], content: k.ncryptsec }));
+      const rs = await Promise.allSettled(jobs);
+      if (rs[0].status !== 'fulfilled') throw rs[0].reason;
+      const r0 = rs[0].value;
+      N.rememberProfileEvent(r0.event);
       await finishSignIn({ pubkey: k.pubkey, skHex: k.skHex, username: u, method: 'local', remember: remember.input.checked, ncryptsec: k.ncryptsec, synced: synced.input.checked });
-      const syncedOk = synced.input.checked ? (rs[2] && rs[2].status === 'fulfilled' ? rs[2].value.ok : 0) : null;
-      state.justJoined = { name: nm, ok: r0.ok, total: r0.total, ms: k.ms, logN: k.logN, syncedOk };
+      const syncedOk = synced.input.checked ? (rs[3] && rs[3].status === 'fulfilled' ? rs[3].value.ok : 0) : null;
+      state.justJoined = { name: nm, ok: r0.ok, total: r0.total, slow: r0.slow, ms: k.ms, logN: k.logN, syncedOk };
       setBusy(submit, null);
       location.hash = '#/home';
     } catch (err) {
@@ -414,7 +417,7 @@ async function viewHome(box) {
   const compose = composeBox((ev) => { if (!seen.has(ev.id)) { seen.add(ev.id); timeline.prepend(renderPost(ev)); status.textContent = ''; } });
   if (state.justJoined) {
     const j = state.justJoined; state.justJoined = null;
-    const lines = [`Your profile went to ${j.ok} of ${j.total} relays.`];
+    const lines = [`Your profile reached ${j.ok} of ${j.total} relays${j.slow ? ` (${j.slow === 1 ? 'one' : j.slow} didn’t answer in time, but may have it)` : ''}.`];
     if (j.syncedOk === 0) lines.push('Signing in on other devices may not work yet, because no relay took your locked key. Try again from Settings later.');
     box.append(el('section', { class: 'card notice', id: 'welcome', 'aria-labelledby': 'welcome-title' },
       el('h2', { id: 'welcome-title', text: `Welcome, ${j.name}!` }),
