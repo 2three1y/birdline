@@ -1,9 +1,9 @@
 // Birdline app: router and views. All text goes in with textContent, never as markup, because a script injection here could steal a key.
-import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.0';
-import * as U from './util.js?v=0.2.0';
-import * as S from './store.js?v=0.2.0';
-import * as N from './nostr.js?v=0.2.0';
-import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.2.0';
+import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.1';
+import * as U from './util.js?v=0.2.1';
+import * as S from './store.js?v=0.2.1';
+import * as N from './nostr.js?v=0.2.1';
+import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.2.1';
 
 // ---------- tiny DOM helpers ----------
 function el(tag, attrs = {}, ...kids) {
@@ -307,7 +307,7 @@ function viewKey(box) {
     try {
       if (s.startsWith('nsec1')) {
         const d = nip19.decode(s); const skHex = U.bytesToHexSafe(d.data);
-        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.0');
+        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.1');
         await finishSignIn({ pubkey: getPublicKey(d.data), skHex, method: 'local', remember: remember.input.checked });
         location.hash = '#/home'; return;
       }
@@ -531,6 +531,7 @@ function textNodes(text) {
 const events = new Map();      // id -> event (posts we've shown)
 const tallies = new Map();     // id -> { replies, reposts, likes, myRepost, myLike }
 const deletedByMe = new Set();
+const touchedAt = new Map(); // id -> when you last pressed something on it here (stale relay answers don't undo your press)
 let deletesLoaded = false;
 async function loadTallies(ids) {
   ids = [...new Set(ids)].filter(Boolean); if (!ids.length || !state.me) return;
@@ -540,10 +541,10 @@ async function loadTallies(ids) {
     for (const d of dels) for (const t of d.tags) if (t[0] === 'e') deletedByMe.add(t[1]);
   }
   for (let i = 0; i < ids.length; i += 60) {
-    const chunk = ids.slice(i, i + 60);
+    const chunk = ids.slice(i, i + 60); const asked = Date.now();
     const evs = await N.query({ kinds: [1, 6, 7], '#e': chunk, limit: 1500 }, 4500).catch(() => []);
     const t = U.tallyActions(evs, chunk, state.me.pubkey, deletedByMe);
-    for (const id of chunk) { tallies.set(id, t[id]); paintActions(id); }
+    for (const id of chunk) { if ((touchedAt.get(id) || 0) >= asked) continue; tallies.set(id, t[id]); paintActions(id); }
   }
 }
 function paintActions(id) {
@@ -561,6 +562,7 @@ function paintActions(id) {
   }
 }
 function bump(id, key, delta, mine) {
+  touchedAt.set(id, Date.now());
   const t = { replies: 0, reposts: 0, likes: 0, myRepost: null, myLike: null, ...(tallies.get(id) || {}) };
   t[key] = Math.max(0, (t[key] || 0) + delta);
   if (mine !== undefined) t[key === 'likes' ? 'myLike' : 'myRepost'] = mine;
@@ -589,9 +591,9 @@ async function doLike(ev, btn) {
   const t = tallies.get(ev.id) || {}; const nm = displayFor(ev.pubkey).name;
   try {
     if (t.myLike) {
-      bump(ev.id, 'likes', -1, null);
+      bump(ev.id, 'likes', -1, null); deletedByMe.add(t.myLike);
       const r = await N.publish(U.deleteTemplate([t.myLike], 7));
-      if (!r.ok) { bump(ev.id, 'likes', 1, t.myLike); announce(`Couldn’t remove the ${likeWord().word.toLowerCase()}: no relay took it.`); return; }
+      if (!r.ok) { deletedByMe.delete(t.myLike); bump(ev.id, 'likes', 1, t.myLike); announce(`Couldn’t remove the ${likeWord().word.toLowerCase()}: no relay took it.`); return; }
       deletedByMe.add(t.myLike); announce(`Removed your ${likeWord().word.toLowerCase()} from ${nm}’s Tweet.`);
     } else {
       bump(ev.id, 'likes', 1, 'pending');
@@ -607,9 +609,9 @@ async function doRepost(ev, btn) {
   const t = tallies.get(ev.id) || {}; const nm = displayFor(ev.pubkey).name;
   try {
     if (t.myRepost) {
-      bump(ev.id, 'reposts', -1, null);
+      bump(ev.id, 'reposts', -1, null); deletedByMe.add(t.myRepost);
       const r = await N.publish(U.deleteTemplate([t.myRepost], 6));
-      if (!r.ok) { bump(ev.id, 'reposts', 1, t.myRepost); announce('Couldn’t undo the Retweet: no relay took it.'); return; }
+      if (!r.ok) { deletedByMe.delete(t.myRepost); bump(ev.id, 'reposts', 1, t.myRepost); announce('Couldn’t undo the Retweet: no relay took it.'); return; }
       deletedByMe.add(t.myRepost); announce(`Undid your Retweet of ${nm}’s Tweet.`);
     } else {
       bump(ev.id, 'reposts', 1, 'pending');
@@ -991,14 +993,17 @@ async function viewProfile(box, r) {
 
   // the posts behind each tab (loaded once, then just redrawn)
   let all = null; let likes = null; let current = 'posts';
-  async function getAll() {
+  let allP = null, likesP = null;
+  function getAll() { return allP || (allP = getAll1()); }
+  function getLikes() { return likesP || (likesP = getLikes1()); }
+  async function getAll1() {
     if (all) return all;
     const evs = (await N.query({ kinds: [1, 6], authors: [pk], limit: 60 }, 4500).catch(() => [])).sort((a, b) => b.created_at - a.created_at);
     const seen = new Set(); all = evs.filter(e => !seen.has(e.id) && seen.add(e.id));
     const n = all.filter(e => e.kind === 1).length; setStat('count-posts', n >= 60 ? '60+' : n);
     return all;
   }
-  async function getLikes() {
+  async function getLikes1() {
     if (likes) return likes;
     const rs = (await N.query({ kinds: [7], authors: [pk], limit: 40 }, 4500).catch(() => [])).filter(e => e.content !== '-').sort((a, b) => b.created_at - a.created_at);
     const ids = [...new Set(rs.map(e => U.reactionTargetOf(e)).filter(Boolean))].slice(0, 40);
@@ -1287,4 +1292,4 @@ async function start() {
   if (state.me) refreshNoteBadge();
 }
 start();
-window.birdline = { version: '0.2.0', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
+window.birdline = { version: '0.2.1', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
