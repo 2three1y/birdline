@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; connect-src 'self' wss: https:; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="no-referrer">
+<title>Birdline</title>
+<meta name="description" content="Birdline: short posts from the people you follow, in order. No algorithm, no ads, no AI. Runs on Nostr, so nobody owns it.">
+<meta name="theme-color" content="#0a6b61">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Birdline">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main" id="skip-link">Skip to main content</a>
+<header class="topbar" id="topbar">
+  <a class="brand" href="#/home" id="brand-link"><img src="icons/icon.svg" alt="" width="28" height="28"><span>Birdline</span></a>
+  <span class="topbar-user" id="topbar-user"></span>
+</header>
+<main id="main" tabindex="-1">
+  <h1 id="view-title" tabindex="-1">Birdline</h1>
+  <div id="view"><p>Loading Birdline…</p><noscript><p>Birdline needs JavaScript turned on.</p></noscript></div>
+</main>
+<footer class="site-footer" id="site-footer"><p>Co-written with Tab</p></footer>
+<nav class="tabbar" id="tabbar" aria-label="Main" hidden>
+  <ul>
+    <li><a href="#/home" id="tab-home"><span class="tab-glyph" aria-hidden="true">⌂</span><span>Home</span></a></li>
+    <li><a href="#/connect" id="tab-connect"><span class="tab-glyph" aria-hidden="true">@</span><span>Connect</span></a></li>
+    <li><a href="#/discover" id="tab-discover"><span class="tab-glyph" aria-hidden="true">#</span><span>Discover</span></a></li>
+    <li><a href="#/me" id="tab-me"><span class="tab-glyph" aria-hidden="true">☺</span><span>Me</span></a></li>
+  </ul>
+</nav>
+<div id="announcer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

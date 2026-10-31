@@ -1,0 +1,151 @@
+{
+ "_about": "Birdline design tokens (dark theme). Own palette: warm paper + deep teal. Check with contrast.py.",
+ "color": {
+  "bg": "#141311",
+  "surface": "#1d1c19",
+  "surface-2": "#272520",
+  "border": "#3b3831",
+  "border-input": "#9a9486",
+  "text": "#f3efe6",
+  "text-muted": "#bdb7aa",
+  "accent": "#5ccfbf",
+  "accent-strong": "#86ddd1",
+  "on-accent": "#0b1f1c",
+  "danger": "#ff8a80",
+  "success": "#7fd69c",
+  "focus": "#ffb070",
+  "banner": "#0f4e47",
+  "on-banner": "#ffffff"
+ },
+ "pairs": [
+  [
+   "text",
+   "bg"
+  ],
+  [
+   "text",
+   "surface"
+  ],
+  [
+   "text",
+   "surface-2"
+  ],
+  [
+   "text-muted",
+   "bg"
+  ],
+  [
+   "text-muted",
+   "surface"
+  ],
+  [
+   "text-muted",
+   "surface-2"
+  ],
+  [
+   "on-accent",
+   "accent"
+  ],
+  [
+   "accent",
+   "surface"
+  ],
+  [
+   "accent",
+   "bg"
+  ],
+  [
+   "accent-strong",
+   "surface"
+  ],
+  [
+   "danger",
+   "surface"
+  ],
+  [
+   "success",
+   "surface"
+  ],
+  [
+   "border-input",
+   "surface",
+   "ui"
+  ],
+  [
+   "focus",
+   "surface",
+   "ui"
+  ],
+  [
+   "focus",
+   "bg",
+   "ui"
+  ],
+  [
+   "on-banner",
+   "banner"
+  ]
+ ],
+ "font": {
+  "sans": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  "mono": "ui-monospace, Menlo, monospace"
+ },
+ "type": {
+  "xs": {
+   "size": 12,
+   "line": 16,
+   "weight": 500
+  },
+  "sm": {
+   "size": 14,
+   "line": 20,
+   "weight": 400
+  },
+  "base": {
+   "size": 16,
+   "line": 24,
+   "weight": 400
+  },
+  "lg": {
+   "size": 20,
+   "line": 28,
+   "weight": 600
+  },
+  "xl": {
+   "size": 28,
+   "line": 34,
+   "weight": 700
+  },
+  "display": {
+   "size": 40,
+   "line": 44,
+   "weight": 700
+  }
+ },
+ "space": [
+  0,
+  4,
+  8,
+  12,
+  16,
+  24,
+  32,
+  48,
+  64
+ ],
+ "radius": {
+  "sm": 6,
+  "md": 10,
+  "lg": 16,
+  "pill": 999
+ },
+ "shadow": {
+  "card": "0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10)",
+  "pop": "0 12px 32px rgba(16,24,40,.16)"
+ },
+ "motion": {
+  "fast": "120ms",
+  "base": "200ms",
+  "ease": "cubic-bezier(.2,.8,.2,1)"
+ }
+}

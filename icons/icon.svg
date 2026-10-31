@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Birdline">
+<rect width="512" height="512" rx="112" fill="#0a6b61"/>
+<circle cx="150" cy="168" r="44" fill="#f2b84b"/>
+<rect x="224" y="146" width="188" height="44" rx="22" fill="#ffffff"/>
+<rect x="100" y="246" width="312" height="44" rx="22" fill="#ffffff"/>
+<rect x="100" y="346" width="220" height="44" rx="22" fill="#ffffff" opacity=".85"/>
+</svg>

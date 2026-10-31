@@ -1,0 +1,18 @@
+  AAA   15.10:1  text                     on bg                   
+  AAA   17.19:1  text                     on surface              
+  AAA   13.93:1  text                     on surface-2            
+  AA     6.73:1  text-muted               on bg                   
+  AAA    7.66:1  text-muted               on surface              
+  AA     6.21:1  text-muted               on surface-2            
+  AA     6.39:1  on-accent                on accent               
+  AA     6.39:1  accent                   on surface              
+  AA     5.61:1  accent                   on bg                   
+  AAA    8.69:1  accent-strong            on surface              
+  AA     6.54:1  danger                   on surface              
+  AA     6.17:1  success                  on surface              
+  PASS   4.64:1  border-input             on surface              ui
+  PASS   5.36:1  focus                    on surface              ui
+  PASS   4.71:1  focus                    on bg                   ui
+  AA     6.39:1  on-banner                on banner               
+
+  16 pairs, 0 failing AA
