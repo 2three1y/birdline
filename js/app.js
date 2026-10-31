@@ -414,7 +414,12 @@ async function viewHome(box) {
   const newBtn = el('button', { type: 'button', class: 'btn secondary new-posts', id: 'new-posts', hidden: true });
   const status = el('p', { class: 'status', id: 'timeline-status', text: 'Loading your timeline…' });
   const more = el('button', { type: 'button', class: 'btn secondary', id: 'timeline-older', hidden: true }, 'Load older posts');
-  const compose = composeBox((ev) => { if (!seen.has(ev.id)) { seen.add(ev.id); timeline.prepend(renderPost(ev)); status.textContent = ''; } });
+  const showMine = (ev) => {
+    seen.add(ev.id); pending = pending.filter(p => p.id !== ev.id); updateNew();
+    if (!timeline.querySelector(`[data-id="${ev.id}"]`)) timeline.prepend(renderPost(ev));
+    status.textContent = '';
+  };
+  const compose = composeBox(showMine);
   if (state.justJoined) {
     const j = state.justJoined; state.justJoined = null;
     const lines = [`Your profile reached ${j.ok} of ${j.total} relays${j.slow ? ` (${j.slow === 1 ? 'one' : j.slow} didn’t answer in time, but may have it)` : ''}.`];
@@ -475,7 +480,7 @@ async function viewHome(box) {
     onevent(ev) {
       if (seen.has(ev.id)) return; seen.add(ev.id);
       if (ev.created_at > Math.floor(Date.now() / 1000) + 120) return;
-      if (ev.pubkey === me && timeline.querySelector(`[data-id="${ev.id}"]`)) return;
+      if (ev.pubkey === me) { showMine(ev); return; } // your own posts show right away
       pending.push(ev); updateNew(); N.wantProfiles([ev.pubkey]);
     },
   });
