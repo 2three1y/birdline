@@ -1,9 +1,9 @@
 // Birdline app: router and views. All text goes in with textContent, never as markup, because a script injection here could steal a key.
-import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.1';
-import * as U from './util.js?v=0.2.1';
-import * as S from './store.js?v=0.2.1';
-import * as N from './nostr.js?v=0.2.1';
-import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.2.1';
+import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.2';
+import * as U from './util.js?v=0.2.2';
+import * as S from './store.js?v=0.2.2';
+import * as N from './nostr.js?v=0.2.2';
+import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.2.2';
 
 // ---------- tiny DOM helpers ----------
 function el(tag, attrs = {}, ...kids) {
@@ -307,7 +307,7 @@ function viewKey(box) {
     try {
       if (s.startsWith('nsec1')) {
         const d = nip19.decode(s); const skHex = U.bytesToHexSafe(d.data);
-        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.1');
+        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.2');
         await finishSignIn({ pubkey: getPublicKey(d.data), skHex, method: 'local', remember: remember.input.checked });
         location.hash = '#/home'; return;
       }
@@ -1080,7 +1080,7 @@ async function refreshNoteBadge() {
 }
 function setBadge(id, n) {
   const b = document.getElementById(id); if (!b) return;
-  b.hidden = !n; b.replaceChildren(n ? String(n > 99 ? '99+' : n) : '', n ? sr(n === 1 ? ' new' : ' new') : '');
+  b.hidden = !n; b.replaceChildren(n ? sr(', ') : '', n ? String(n > 99 ? '99+' : n) : '', n ? sr(' new') : '');
 }
 async function viewConnect(box) {
   setTitle('Notifications');
@@ -1292,4 +1292,4 @@ async function start() {
   if (state.me) refreshNoteBadge();
 }
 start();
-window.birdline = { version: '0.2.1', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
+window.birdline = { version: '0.2.2', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };

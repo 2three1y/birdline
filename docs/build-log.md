@@ -8,3 +8,6 @@
 | S13 Profile | 2026-10-31 | done | following / followers lists, favorites tab | follow state when a profile is opened directly |
 | Me / Settings | 2026-10-31 | partial | change password, relay editing, design themes | — |
 | Connect / Discover | 2026-10-31 | placeholder | everything but "go to a person" | — |
+| Classic look (v0.2) | 2026-10-31 | done | follow lists pages, network trends, search | the one h1 has to move into each view's main column and back |
+| Reply / Retweet / Like / More | 2026-10-31 | done | quote Tweets, reply filter | counts loading from slow relays could undo a quick un-like; fixed with a per-Tweet "you pressed this" time |
+| Notifications | 2026-10-31 | done | grouping, mentions tab | — |
