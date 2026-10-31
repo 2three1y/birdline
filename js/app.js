@@ -1,9 +1,9 @@
 // Birdline app: router and views. All text goes in with textContent, never as markup, because a script injection here could steal a key.
-import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.1';
-import * as U from './util.js?v=0.1.1';
-import * as S from './store.js?v=0.1.1';
-import * as N from './nostr.js?v=0.1.1';
-import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.1.1';
+import { nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.2';
+import * as U from './util.js?v=0.1.2';
+import * as S from './store.js?v=0.1.2';
+import * as N from './nostr.js?v=0.1.2';
+import { createLockedKey, unlockKey, lastTimings, ncryptLogN } from './crypto.js?v=0.1.2';
 
 // ---------- tiny DOM helpers ----------
 function el(tag, attrs = {}, ...kids) {
@@ -298,7 +298,7 @@ function viewKey(box) {
     try {
       if (s.startsWith('nsec1')) {
         const d = nip19.decode(s); const skHex = U.bytesToHexSafe(d.data);
-        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.1');
+        const { getPublicKey } = await import('../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.2');
         await finishSignIn({ pubkey: getPublicKey(d.data), skHex, method: 'local', remember: remember.input.checked });
         location.hash = '#/home'; return;
       }
@@ -452,9 +452,7 @@ async function viewHome(box) {
 
   const unsub = N.onProfiles((got) => refreshNames(timeline, got)); onCleanup(unsub);
 
-  let follow = N.cachedFollowList(me);
-  if (!follow) follow = await N.fetchNewestFollowList(me); else N.fetchNewestFollowList(me).then(f => { if (f) state.follows = U.followsOf(f); });
-  state.follows = U.followsOf(follow);
+  if (N.cachedFollowList(me)) { state.follows = U.followsOf(N.cachedFollowList(me)); loadMyFollows(); } else await loadMyFollows();
   const authors = [me, ...state.follows].slice(0, 500);
   const nowSec = Math.floor(Date.now() / 1000);
   async function load(until) {
@@ -487,6 +485,17 @@ async function viewHome(box) {
   onCleanup(() => sub.close());
 }
 
+// ---------- my follow list ----------
+async function loadMyFollows() {
+  if (!state.me) return;
+  const cached = N.cachedFollowList(state.me.pubkey);
+  if (cached) state.follows = U.followsOf(cached);
+  if (state.followsFetched && cached) return;
+  const f = await N.fetchNewestFollowList(state.me.pubkey).catch(() => null);
+  if (f) state.follows = U.followsOf(f);
+  state.followsFetched = true;
+}
+
 // ---------- profile ----------
 async function resolveWho(who) {
   const pk = N.pubkeyFromAny(who); if (pk) return pk;
@@ -504,6 +513,7 @@ async function viewProfile(box, r) {
   if (!document.body.contains(status)) return;
   if (!pk) { setTitle('Person not found'); status.textContent = `No one called ${r.who} was found. Check the spelling, or paste their npub on Connect.`; return; }
   const mine = state.me && state.me.pubkey === pk;
+  if (state.me && !mine) await loadMyFollows();
   let prof = N.cachedProfile(pk);
   const header = el('section', { class: 'card profile', id: 'profile-header', 'aria-label': 'Profile details' });
   const posts = el('div', { id: 'profile-posts', class: 'timeline' });
@@ -686,7 +696,7 @@ async function viewSettings(box) {
 }
 
 async function signOut() {
-  await S.forgetSession(); N.clearSigner(); state.me = null; state.skHex = null; state.follows = [];
+  await S.forgetSession(); N.clearSigner(); state.me = null; state.skHex = null; state.follows = []; state.followsFetched = false;
   location.hash = '#/signin'; setTimeout(() => announce('Signed out.'), 600);
 }
 
@@ -707,4 +717,4 @@ async function start() {
   await route();
 }
 start();
-window.birdline = { version: '0.1.1', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
+window.birdline = { version: '0.1.2', state: () => ({ signedIn: !!state.me, pubkey: state.me && state.me.pubkey, username: state.me && state.me.username }), timings: lastTimings };
