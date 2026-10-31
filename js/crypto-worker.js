@@ -1,5 +1,5 @@
 // Birdline: runs the slow password work (NIP-49 scrypt) off the main thread so VoiceOver stays responsive.
-import { nip49, generateSecretKey, getPublicKey, bytesToHex, hexToBytes } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.2';
+import { nip49, generateSecretKey, getPublicKey, bytesToHex, hexToBytes } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.0';
 
 self.onmessage = (e) => {
   const { id, op, password, logN, ncryptsec, skHex } = e.data || {};

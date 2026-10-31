@@ -1,14 +1,14 @@
 {
  "name": "Birdline",
  "short_name": "Birdline",
- "description": "Short posts from the people you follow, in order. No algorithm, no ads, no AI. Runs on Nostr.",
+ "description": "Short Tweets from the people you follow, in order. No algorithm, no ads, no AI. Runs on Nostr.",
  "lang": "en-US",
  "dir": "ltr",
  "start_url": "./#/home",
  "scope": "./",
  "display": "standalone",
- "background_color": "#f3f0e8",
- "theme_color": "#0a6b61",
+ "background_color": "#e4eaee",
+ "theme_color": "#ffffff",
  "icons": [
   {
    "src": "icons/icon-192.png",

@@ -191,3 +191,95 @@ export function ncryptsecLogN(ncryptsec) {
 
 export function bytesToHexSafe(b) { return [...b].map(x => x.toString(16).padStart(2, '0')).join(''); }
 export function hexToBytesSafe(h) { return Uint8Array.from(String(h).match(/../g).map(x => parseInt(x, 16))); }
+
+
+// ---- post actions (NIP-10 replies, NIP-18 reposts, NIP-25 likes, NIP-09 deletes) ----
+const HEX64 = /^[0-9a-f]{64}$/;
+/** The id of the post this kind 1 answers: the "reply" marker, else the "root" marker, else the last positional e tag. */
+export function replyTargetOf(ev) {
+  const es = (ev && ev.tags || []).filter(t => t[0] === 'e' && HEX64.test(t[1] || ''));
+  if (!es.length) return null;
+  const marked = es.find(t => t[3] === 'reply') || es.find(t => t[3] === 'root');
+  return (marked || es[es.length - 1])[1];
+}
+/** The thread's first post for a reply (or the post itself when it isn't a reply). */
+export function rootOf(ev) {
+  const es = (ev && ev.tags || []).filter(t => t[0] === 'e' && HEX64.test(t[1] || ''));
+  const r = es.find(t => t[3] === 'root');
+  if (r) return r[1];
+  if (es.length && !es.some(t => t[3])) return es[0][1];
+  return es.length ? replyTargetOf(ev) : ev.id;
+}
+/** The post a like or repost points at: NIP-25 says the last e tag. */
+export function reactionTargetOf(ev) {
+  const es = (ev && ev.tags || []).filter(t => t[0] === 'e' && HEX64.test(t[1] || ''));
+  return es.length ? es[es.length - 1][1] : null;
+}
+export function replyTemplate(parent, content, relayHint = '') {
+  const root = rootOf(parent);
+  const tags = [];
+  if (root && root !== parent.id) tags.push(['e', root, relayHint, 'root'], ['e', parent.id, relayHint, 'reply']);
+  else tags.push(['e', parent.id, relayHint, 'root']);
+  const ps = [parent.pubkey, ...(parent.tags || []).filter(t => t[0] === 'p' && HEX64.test(t[1] || '')).map(t => t[1])];
+  for (const p of [...new Set(ps)]) tags.push(['p', p]);
+  for (const h of hashtagsOf(content)) tags.push(['t', h]);
+  return { kind: 1, content, tags };
+}
+export function repostTemplate(ev, relayHint = '') {
+  return { kind: 6, content: JSON.stringify(ev), tags: [['e', ev.id, relayHint], ['p', ev.pubkey], ['k', String(ev.kind)]] };
+}
+export function likeTemplate(ev) {
+  return { kind: 7, content: '+', tags: [['e', ev.id], ['p', ev.pubkey], ['k', String(ev.kind)]] };
+}
+export function deleteTemplate(ids, kind) {
+  return { kind: 5, content: '', tags: [...ids.map(id => ['e', id]), ['k', String(kind)]] };
+}
+/** Count replies, reposts and likes for the given post ids. Each person counts once per like or repost. */
+export function tallyActions(events, ids, me, deleted = new Set()) {
+  const want = new Set(ids); const out = {};
+  for (const id of ids) out[id] = { replies: new Set(), reposts: new Map(), likes: new Map() };
+  for (const ev of events || []) {
+    if (deleted.has(ev.id)) continue;
+    if (ev.kind === 1) { const t = replyTargetOf(ev); if (t && want.has(t)) out[t].replies.add(ev.id); }
+    else if (ev.kind === 6 || ev.kind === 16) { const t = reactionTargetOf(ev); if (t && want.has(t) && !out[t].reposts.has(ev.pubkey)) out[t].reposts.set(ev.pubkey, ev.id); }
+    else if (ev.kind === 7) { const t = reactionTargetOf(ev); if (t && want.has(t) && ev.content !== '-' && !out[t].likes.has(ev.pubkey)) out[t].likes.set(ev.pubkey, ev.id); }
+  }
+  const res = {};
+  for (const id of ids) {
+    const o = out[id];
+    res[id] = { replies: o.replies.size, reposts: o.reposts.size, likes: o.likes.size, myRepost: (me && o.reposts.get(me)) || null, myLike: (me && o.likes.get(me)) || null };
+  }
+  return res;
+}
+/** What VoiceOver hears for an action button: "Like, 3" (just "Like" at zero). */
+export function actionLabel(word, n) { return n > 0 ? `${word}, ${n}` : word; }
+/** Short visible count: 999, 1.2K, 34K, 1.5M. */
+export function compactCount(n) {
+  if (n == null) return '';
+  if (typeof n !== 'number') return String(n);
+  if (n < 1000) return String(n);
+  if (n < 10000) return (Math.floor(n / 100) / 10).toString().replace(/\.0$/, '') + 'K';
+  if (n < 1e6) return Math.floor(n / 1000) + 'K';
+  return (Math.floor(n / 1e5) / 10).toString().replace(/\.0$/, '') + 'M';
+}
+/** Parse the post inside a kind 6 repost (null when it isn't there or isn't valid JSON). */
+export function repostedEvent(ev) {
+  try { const e = JSON.parse(ev.content || ''); return e && typeof e === 'object' && HEX64.test(e.id || '') && HEX64.test(e.pubkey || '') && typeof e.content === 'string' ? e : null; } catch { return null; }
+}
+/** Hashtags people in the loaded posts are using, most-used first. */
+export function topHashtags(events, n = 5) {
+  const counts = new Map();
+  for (const ev of events || []) {
+    const seen = new Set();
+    for (const t of (ev.tags || [])) if (t[0] === 't' && t[1]) seen.add(String(t[1]).toLowerCase().slice(0, 40));
+    for (const h of hashtagsOf(ev.content || '')) seen.add(h.slice(0, 40));
+    for (const h of seen) counts.set(h, (counts.get(h) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, n).map(([tag, count]) => ({ tag, count }));
+}
+/** People followed by the people you follow, most-shared first, minus you and who you already follow. */
+export function suggestFollows(followLists, me, myFollows, n = 3) {
+  const skip = new Set([me, ...myFollows]); const counts = new Map();
+  for (const ev of followLists || []) for (const p of followsOf(ev)) if (!skip.has(p)) counts.set(p, (counts.get(p) || 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, n).map(([pubkey, count]) => ({ pubkey, count }));
+}

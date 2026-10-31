@@ -1,13 +1,13 @@
 // Birdline: key creation and password locking (NIP-49), with timing logged so the cost can be tuned per device.
-import { nip49, generateSecretKey, getPublicKey, bytesToHex, hexToBytes } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.2';
-import { LOG_N, LOG_N_FALLBACK, ncryptsecLogN } from './util.js?v=0.1.2';
+import { nip49, generateSecretKey, getPublicKey, bytesToHex, hexToBytes } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.0';
+import { LOG_N, LOG_N_FALLBACK, ncryptsecLogN } from './util.js?v=0.2.0';
 
 let worker = null; let seq = 0; const waiting = new Map();
 function getWorker() {
   if (worker === false) return null;
   if (worker) return worker;
   try {
-    worker = new Worker(new URL('./crypto-worker.js?v=0.1.2', import.meta.url), { type: 'module' });
+    worker = new Worker(new URL('./crypto-worker.js?v=0.2.0', import.meta.url), { type: 'module' });
     worker.onmessage = (e) => { const w = waiting.get(e.data.id); if (w) { waiting.delete(e.data.id); w(e.data); } };
     worker.onerror = () => { worker = false; for (const [k, w] of waiting) { waiting.delete(k); w({ ok: false, error: 'worker failed', retryInline: true }); } };
   } catch { worker = false; }

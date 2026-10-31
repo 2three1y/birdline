@@ -45,7 +45,8 @@ test('word rules', () => {
   for (const f of files) {
     const s = readFileSync(f, 'utf8').toLowerCase();
     for (const w of banned) assert.ok(!new RegExp(`\\b${w}`).test(s), `${f} contains a banned word`);
-    if (!f.includes('vendor') && !f.endsWith('README.md') && !f.includes('docs')) assert.doesNotMatch(s, /twitter|tweet/, `${f} uses the original's name`);
+    // Carter's call (2026-10-31): the classic words "Tweet" and "Retweet" are used descriptively; the original's name stays out of the app.
+    if (!f.includes('vendor') && !f.endsWith('README.md') && !f.includes('docs') && !f.includes('tests')) assert.doesNotMatch(s, /twitter|\bx\.com/, `${f} uses the original's name`);
   }
 });
 
@@ -58,4 +59,17 @@ test('every app import carries the same cache version', () => {
     }
   }
   assert.equal(versions.size, 1, [...versions].join(' '));
+});
+
+test('post actions are real buttons with words, and no single-key shortcuts', () => {
+  const app = readFileSync(join(root, 'js', 'app.js'), 'utf8');
+  for (const w of ["'Reply'", "'Retweet'", "'aria-pressed'", "'More options'"]) assert.ok(app.includes(w), `app.js has ${w}`);
+  assert.match(app, /el\('button', \{ type: 'button', class: `act act-\$\{kind\}`/, 'actions are <button>s');
+  assert.doesNotMatch(app, /addEventListener\('keypress'|e\.key === '[a-z]'/i, 'no single-letter hotkeys');
+  assert.match(app, /role: 'tab'/); assert.match(app, /'aria-selected'/);
+});
+test('the three-column look is in the CSS', () => {
+  const css = readFileSync(join(root, 'css', 'app.css'), 'utf8');
+  assert.match(css, /grid-template-areas: "left center right"/);
+  assert.match(css, /max-width: 699\.98px/);
 });

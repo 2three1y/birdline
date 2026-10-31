@@ -1,12 +1,27 @@
 # Birdline
 
-Short posts from the people you follow, newest first. No algorithm, no ads, no AI, no paid checkmarks — and because it runs on [Nostr](https://nostr.com), no company owns your account or can ban it.
+Short Tweets from the people you follow, newest first. No algorithm, no ads, no AI, no paid checkmarks — and because it runs on [Nostr](https://nostr.com), no company owns your account or can ban it.
 
-Birdline is a fresh take on how microblogging felt around 2012: a "What's on your mind?" box, a 140-character limit, a plain chronological timeline, profiles with a Follow button. Built screen-reader-first and tested for VoiceOver on iPhone.
+Birdline brings back the classic timeline: a top bar with Home, Notifications and Messages, your profile card and trends on the left, a "What's happening?" box and the timeline in the middle, who to follow on the right, and a 140-character limit. Built screen-reader-first and tested for VoiceOver on iPhone.
+
+Layout inspired by the classic 2015-era timeline look; all code, styles and icons are original.
+
+Birdline is not affiliated with Twitter or X; 'Tweet' is used descriptively.
 
 **Use it:** https://2three1y.github.io/birdline/ — on iPhone, open it in Safari, tap Share, then **Add to Home Screen**.
 
-## What works in this first build (v0.1)
+## New in v0.2: the classic look, plus Reply, Retweet and Like
+
+- **Three columns on a computer** (1000 px and wider): top bar (Home, Notifications with a count, Messages, Discover, Me; the Birdline mark in the middle; search, account menu and a **Tweet** button on the right). Left: your profile card (banner, picture, name, @username, Tweets / Following / Followers) and Trends (hashtags from your timeline). Middle: the compose box (one line until you focus it), the "Show N new Tweets" button and the timeline. Right: Who to follow (people followed by the people you follow).
+- **On a phone**: one column, and the top bar shrinks to five icons with small labels plus a round Tweet button.
+- **Every Tweet** has a heading (name and @username), the time (with the full date for screen readers, and a link to the Tweet with its replies), the text, then four real buttons with their counts in their names: "Reply, 2", "Retweet, 1" (a toggle, `aria-pressed`), "Like, 3" (a toggle; Settings can make it a star called "Favorite") and "More options" (open the Tweet, copy its link or Nostr ID, delete your own).
+  - Reply opens a reply box right under the Tweet (kind 1 with NIP-10 `root`/`reply` e tags and p tags for everyone in the thread). Retweet is a kind 6 carrying the original; Like is a kind 7 "+". Pressing again undoes it with a kind 5 delete.
+- **Profile**: full-width banner, a stats bar (Tweets, Following, Followers, Likes) with Follow / Unfollow on the right, the name, bio and link in the left column, and real tabs (Tweets / Tweets & replies / Likes, arrow keys move between them).
+- **Notifications** (the old Connect page): replies, mentions, likes and Retweets of your Tweets; the top bar shows how many are new.
+- **A Tweet's own page** with its replies (`#/post/<id>`).
+- No single-key shortcuts: nothing fights with VoiceOver. Cmd/Ctrl+Enter sends.
+
+## What came in the first build (v0.1)
 
 - **Join**: name, username, password. Behind the scenes your browser makes a Nostr key, locks it with your password (NIP-49), and publishes your profile. No email, no phone number.
 - **Sign in**: username + password, on this device or any other (see "Synced sign-in"). Secondary option: an existing Nostr key (nsec / ncryptsec) or a NIP-07 browser extension.
@@ -77,10 +92,10 @@ node tests/relay-smoke.mjs  # publishes a throwaway claim to the default relays 
 
 ## Not yet
 
-Replies and conversations, reposts, favorites, mentions, DMs (NIP-17), search, trends, who to follow, lists, mute/block, photo uploads, editable relays, change password / restore from backup, the username taken-list, NIP-05.
+DMs (NIP-17), search, network-wide trends, following/followers lists, lists, mute/block, photo uploads, editable relays, change password / restore from backup, the username taken-list, NIP-05.
 
 ## Credits
 
-Inspired by how Twitter worked around 2012 (Birdline is not affiliated with it and uses none of its code, words, logo or images). Thanks to the OldTwitter extension by dimden for showing how good a chronological, buffered timeline can feel — used as a reference only, nothing copied.
+Inspired by how Twitter looked and worked around 2012–2015 (Birdline is not affiliated with it and uses none of its code, logo, font or images). Thanks to the OldTwitter extension by dimden for showing how good the classic layout and a chronological, buffered timeline can feel — looked at as a reference only; no code, styles, icons or text copied.
 
 Co-written with Tab. MIT license.

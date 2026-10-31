@@ -1,7 +1,7 @@
 // Birdline: talking to Nostr relays (publish, fetch, live updates).
-import { SimplePool, finalizeEvent, verifyEvent, hexToBytes, nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.1.2';
-import { DEFAULT_RELAYS, APP_TAG, LABEL_NS, newestEvent, parseProfile } from './util.js?v=0.1.2';
-import { cacheGet, cachePut } from './store.js?v=0.1.2';
+import { SimplePool, finalizeEvent, verifyEvent, hexToBytes, nip19 } from '../vendor/nostr-tools-2.25.4.bundle.js?v=0.2.0';
+import { DEFAULT_RELAYS, APP_TAG, LABEL_NS, newestEvent, parseProfile } from './util.js?v=0.2.0';
+import { cacheGet, cachePut } from './store.js?v=0.2.0';
 
 export const pool = new SimplePool({ enablePing: true, enableReconnect: true });
 export let relays = [...DEFAULT_RELAYS];
@@ -92,6 +92,7 @@ export async function syncedLogins(username) {
 }
 
 export function npubOf(pk) { return nip19.npubEncode(pk); }
+export function neventOf(ev) { return nip19.neventEncode({ id: ev.id, author: ev.pubkey, kind: ev.kind, relays: relays.slice(0, 2) }); }
 export function pubkeyFromAny(s) {
   s = String(s || '').trim().replace(/^nostr:/, '');
   if (/^[0-9a-f]{64}$/.test(s)) return s;

@@ -1,46 +1,62 @@
-/* Birdline design tokens. Generated from docs/design/tokens.*.json. Components use these roles, never raw colors. */
+/* Birdline design tokens: the classic light timeline look (white cards on cool gray, one blue accent), picked fresh for Birdline. */
 :root {
-  --c-bg: #f3f0e8;
+  --c-bg: #e4eaee;
   --c-surface: #ffffff;
-  --c-surface-2: #ece7db;
-  --c-border: #d8d1c1;
-  --c-border-input: #7a7468;
-  --c-text: #1d1b17;
-  --c-text-muted: #57534a;
-  --c-accent: #0a6b61;
-  --c-accent-strong: #08554d;
+  --c-surface-2: #f4f7f9;
+  --c-compose: #e9f2f9;
+  --c-border: #d6dee4;
+  --c-divider: #e3e9ed;
+  --c-border-input: #8696a3;
+  --c-text: #1e2832;
+  --c-text-muted: #5a6875;
+  --c-icon: #687784;
+  --c-accent: #1a6fb5;
+  --c-accent-strong: #135a94;
+  --c-accent-soft: #dcebf7;
   --c-on-accent: #ffffff;
+  --c-like: #c41a4c;
+  --c-repost: #16774a;
+  --c-reply: #1a6fb5;
+  --c-badge: #1a6fb5;
   --c-danger: #b3261e;
   --c-success: #1f6f3f;
-  --c-focus: #b8460b;
-  --c-banner: #0a6b61;
-  --c-on-banner: #ffffff;
-  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem;
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-pill: 999px;
-  --text-xs: .8125rem; --text-sm: .9375rem; --text-base: 1rem; --text-lg: 1.25rem; --text-xl: 1.625rem; --text-display: 2.25rem;
-  --shadow-card: 0 1px 2px rgba(29,27,23,.08), 0 1px 3px rgba(29,27,23,.10);
-  --motion-fast: 120ms; --motion-base: 200ms; --ease: cubic-bezier(.2,.8,.2,1);
-  --tap: 44px; --content-max: 37.5rem;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --c-focus: #c45a08;
+  --c-banner: #5f8fb5;
+  --c-topbar: #ffffff;
+  --c-shadow: rgba(20, 35, 50, .12);
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.5rem; --space-6: 2rem;
+  --radius-sm: 4px; --radius-md: 5px; --radius-lg: 6px; --radius-pill: 999px;
+  --text-xs: .75rem; --text-sm: .8125rem; --text-md: .875rem; --text-base: 1rem; --text-lg: 1.125rem; --text-xl: 1.375rem;
+  --motion-fast: 120ms; --ease: ease-out;
+  --tap: 44px; --topbar-h: 46px;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, sans-serif;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
  :root {
-  --c-bg: #141311;
-  --c-surface: #1d1c19;
-  --c-surface-2: #272520;
-  --c-border: #3b3831;
-  --c-border-input: #9a9486;
-  --c-text: #f3efe6;
-  --c-text-muted: #bdb7aa;
-  --c-accent: #5ccfbf;
-  --c-accent-strong: #86ddd1;
-  --c-on-accent: #0b1f1c;
+  --c-bg: #0f151b;
+  --c-surface: #18212a;
+  --c-surface-2: #1f2a35;
+  --c-compose: #1c2a38;
+  --c-border: #2c3a47;
+  --c-divider: #26323e;
+  --c-border-input: #7d8d9b;
+  --c-text: #e9eef2;
+  --c-text-muted: #a3b0bc;
+  --c-icon: #9aa8b5;
+  --c-accent: #5daeea;
+  --c-accent-strong: #8cc6f1;
+  --c-accent-soft: #1d3346;
+  --c-on-accent: #0a1622;
+  --c-like: #ff6f94;
+  --c-repost: #4fd08e;
+  --c-reply: #5daeea;
+  --c-badge: #5daeea;
   --c-danger: #ff8a80;
   --c-success: #7fd69c;
   --c-focus: #ffb070;
-  --c-banner: #0f4e47;
-  --c-on-banner: #ffffff;
-  --shadow-card: 0 1px 2px rgba(0,0,0,.5);
+  --c-banner: #2c4d68;
+  --c-topbar: #18212a;
+  --c-shadow: rgba(0, 0, 0, .5);
  }
 }

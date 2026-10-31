@@ -1,11 +1,11 @@
 {
  "name": "birdline",
- "version": "0.1.0",
+ "version": "0.2.0",
  "private": true,
  "type": "module",
  "description": "Birdline: old-style chronological microblog on Nostr. No build step.",
  "scripts": {
-  "test": "node --test tests/"
+  "test": "node --test tests/*.test.mjs"
  },
  "license": "MIT"
 }
