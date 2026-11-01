@@ -61,9 +61,9 @@ let firstRender = true;
 async function route() {
   runCleanup();
   const r = parseRoute();
-  if (!state.me && !PUBLIC.has(r.name) && r.name !== 'profile') { location.replace('#/signin'); return; }
+  if (!state.me && !PUBLIC.has(r.name) && r.name !== 'profile') { location.replace('#/'); return; }
   if (state.me && (r.name === '' || r.name === 'signin' || r.name === 'join')) { location.replace('#/home'); return; }
-  const views = { '': viewSignIn, signin: viewSignIn, join: viewJoin, key: viewKey, home: viewHome, connect: viewConnect, notifications: viewConnect, messages: viewMessages, discover: viewDiscover, me: viewMe, settings: viewSettings, profile: viewProfile, post: viewPost };
+  const views = { '': viewWelcome, signin: viewSignIn, join: viewJoin, key: viewKey, home: viewHome, connect: viewConnect, notifications: viewConnect, messages: viewMessages, discover: viewDiscover, me: viewMe, settings: viewSettings, profile: viewProfile, post: viewPost };
   const view = views[r.name] || viewNotFound;
   const box = document.getElementById('view');
   closeMenu(false); closeAvatarMenu(false);
@@ -126,6 +126,24 @@ async function finishSignIn({ pubkey, skHex, username, method, remember, ncrypts
   state.me = { pubkey, username, method };
   if (ncryptsec && username) S.saveAccount(username, { pubkey, ncryptsec, synced: !!synced });
   if (remember) await S.rememberSession(pubkey, method === 'local' ? skHex : null, username); else await S.forgetSession();
+}
+
+function viewWelcome(box) {
+  setTitle('Birdline');
+  box.append(
+    el('p', { class: 'lede' }, 'Birdline is a free, open-source app for reading and writing short posts on Nostr, an open social network. It is a personal project by Chaotic Carter, built screen-reader-first.'),
+    el('section', { class: 'card', 'aria-labelledby': 'about-safe-title' },
+      el('h2', { id: 'about-safe-title', text: 'How your key stays safe' }),
+      el('ul', {},
+        el('li', {}, 'Birdline has no server and no company behind it. It is a static page that talks straight to public Nostr relays.'),
+        el('li', {}, 'Your Nostr key is created and encrypted on your own device. It is never sent anywhere, not even to Carter.'),
+        el('li', {}, 'Birdline never asks for your email, your phone number, or a password from any other website. Do not use a password from another site here.'),
+        el('li', {}, 'Birdline is not affiliated with Twitter, X, or any other company.')),
+      el('p', {}, el('a', { href: 'https://github.com/2three1y/birdline' }, 'Read the source code on GitHub'))),
+    el('section', { class: 'card join-cta', 'aria-labelledby': 'welcome-start-title' },
+      el('h2', { id: 'welcome-start-title', text: 'Get started' }),
+      el('p', {}, el('a', { href: '#/join', class: 'btn primary', id: 'welcome-join' }, 'Make a Birdline profile')),
+      el('p', {}, el('a', { href: '#/signin', class: 'btn secondary', id: 'welcome-signin' }, 'I already have one'))));
 }
 
 function viewSignIn(box) {
