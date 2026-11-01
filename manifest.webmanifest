@@ -1,7 +1,7 @@
 {
  "name": "Birdline",
  "short_name": "Birdline",
- "description": "Short Tweets from the people you follow, in order. No algorithm, no ads, no AI. Runs on Nostr.",
+ "description": "Short posts from the people you follow, in order. No algorithm, no ads, no AI. Runs on Nostr.",
  "lang": "en-US",
  "dir": "ltr",
  "start_url": "./#/home",
