@@ -93,7 +93,7 @@ function isMe(who) { if (!state.me || !who) return false; return who === state.m
 function field({ id, label, type = 'text', hint, autocomplete, extra = {} }) {
   const hintId = hint ? `${id}-hint` : null;
   const errId = `${id}-error`;
-  const input = el(type === 'textarea' ? 'textarea' : 'input', { id, name: id, type: type === 'textarea' ? null : type, autocomplete, 'aria-describedby': [hintId, errId].filter(Boolean).join(' '), ...extra });
+  const input = el(type === 'textarea' ? 'textarea' : 'input', { id, name: id, type: type === 'textarea' ? null : type, autocomplete, ...extra });
   return {
     input,
     node: el('div', { class: 'field' },
@@ -111,7 +111,7 @@ function showPasswordButton(input, id) {
   } }, 'Show password');
 }
 function checkbox({ id, label, desc, checked }) {
-  const input = el('input', { type: 'checkbox', id, checked: !!checked, 'aria-describedby': desc ? `${id}-desc` : null });
+  const input = el('input', { type: 'checkbox', id, checked: !!checked });
   return { input, node: el('div', { class: 'check' }, input, el('div', {}, el('label', { for: id, text: label }), desc ? el('p', { class: 'hint', id: `${id}-desc`, text: desc }) : null)) };
 }
 function setBusy(btn, busyText) {
@@ -205,11 +205,9 @@ function viewJoin(box) {
   const name = field({ id: 'join-name', label: 'Full name', autocomplete: 'name', hint: 'Shown on your profile. You can change it later.', extra: { maxlength: 50 } });
   const user = field({ id: 'join-username', label: 'Username', autocomplete: 'username', hint: 'Up to 15 letters, numbers or underscores. People find you by it.', extra: { autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false', maxlength: 16 } });
   const status = el('p', { class: 'status', id: 'join-username-status' });
-  user.input.setAttribute('aria-describedby', user.input.getAttribute('aria-describedby') + ' join-username-status');
   const suggest = el('div', { class: 'suggestions', id: 'join-username-suggestions' });
   const pass = field({ id: 'join-password', label: 'Password', type: 'password', autocomplete: 'new-password', hint: 'At least 10 characters. It also locks your account key, so use one you don’t use anywhere else.' });
   const strength = el('p', { class: 'status', id: 'join-password-strength' });
-  pass.input.setAttribute('aria-describedby', pass.input.getAttribute('aria-describedby') + ' join-password-strength');
   const synced = checkbox({ id: 'join-synced', label: 'Sign in on any device with this password', checked: true, desc: 'Your account key is saved on the relays, locked with your password, so signing in works anywhere. Turn this off to keep the key only on this device.' });
   const remember = checkbox({ id: 'join-remember', label: 'Keep me signed in on this device', checked: true });
   const submit = el('button', { type: 'submit', class: 'btn primary', id: 'join-submit' }, 'Create my account');
@@ -755,7 +753,7 @@ function refreshNames(root, got) {
 // ---------- compose ----------
 /** A compose form. The home one is "compose-…" (ids kept from v0.1); replies and the pop-up get their own prefix. */
 function composeBox({ prefix = 'compose', label = 'What’s happening?', placeholder = 'What’s happening?', buttonText = 'Tweet', cls = 'compose-home', template, onPosted, onCancel, alwaysOpen = false } = {}) {
-  const text = el('textarea', { id: `${prefix}-text`, rows: '1', 'aria-describedby': `${prefix}-count-desc`, autocapitalize: 'sentences', placeholder });
+  const text = el('textarea', { id: `${prefix}-text`, rows: '1', autocapitalize: 'sentences', placeholder });
   const count = el('span', { id: `${prefix}-count`, class: 'count', 'aria-hidden': 'true', text: String(U.POST_LIMIT) });
   const desc = el('span', { id: `${prefix}-count-desc`, class: 'visually-hidden', text: U.charsLeftLabel(U.POST_LIMIT) });
   const send = el('button', { type: 'submit', class: 'btn primary', id: `${prefix}-send` }, prefix.endsWith('compose') ? [icon('quill'), ' ', buttonText] : buttonText);
